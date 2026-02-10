@@ -395,7 +395,7 @@ pub fn compile_files(
 
                 // Handle different function body types
                 let mut compiled_fn = match &*body {
-                    baml_compiler_hir::FunctionBody::Llm(llm_body) => {
+                    baml_compiler_hir::FunctionBody::Llm(llm_body, _) => {
                         // LLM functions are external operations dispatched by the engine.
                         // TODO: Eventually these should compile to bytecode that calls
                         // `baml.llm.render_prompt` orchestrator.
@@ -454,7 +454,7 @@ pub fn compile_files(
                             body_meta: None,
                         }
                     }
-                    baml_compiler_hir::FunctionBody::Expr(_, _) => {
+                    baml_compiler_hir::FunctionBody::Expr(..) => {
                         // Run type inference
                         // Note: type_aliases is not passed here, so exhaustiveness
                         // checking for type aliases won't work. This is acceptable

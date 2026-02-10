@@ -184,7 +184,7 @@ pub fn collect_diagnostics(
                 let body = function_body(db, *func_loc);
 
                 // Collect body lowering diagnostics (e.g., missing semicolons)
-                if let FunctionBody::Expr(expr_body, _) = &*body {
+                if let FunctionBody::Expr(expr_body, _, _) = &*body {
                     for diag in &expr_body.diagnostics {
                         diagnostics.push(diag.to_diagnostic());
                     }
@@ -210,14 +210,14 @@ pub fn collect_diagnostics(
 
                 // For LLM functions, look up the prompt's file offset for Jinja error resolution
                 let template_file_offset = match &*body {
-                    FunctionBody::Llm(_) => llm_function_file_offset(db, *func_loc),
+                    FunctionBody::Llm(_, _) => llm_function_file_offset(db, *func_loc),
                     _ => None,
                 };
 
                 // Create context based on body type
                 let empty_source_map = HirSourceMap::default();
                 let expr_fn_source_map = match &*body {
-                    FunctionBody::Expr(_, source_map) => source_map,
+                    FunctionBody::Expr(_, source_map, _) => source_map,
                     _ => &empty_source_map,
                 };
 

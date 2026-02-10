@@ -1122,7 +1122,7 @@ pub fn function_body<'db>(db: &'db dyn Db, function: FunctionLoc<'db>) -> Arc<Fu
                                 &default_role,
                                 &allowed_roles,
                             );
-                        return Arc::new(FunctionBody::Expr(body, source_map));
+                        return Arc::new(FunctionBody::Expr(body, source_map, None));
                     }
                 }
             }
@@ -1135,7 +1135,7 @@ pub fn function_body<'db>(db: &'db dyn Db, function: FunctionLoc<'db>) -> Arc<Fu
                 &default_role,
                 &allowed_roles,
             );
-            return Arc::new(FunctionBody::Expr(body, source_map));
+            return Arc::new(FunctionBody::Expr(body, source_map, None));
         }
     }
 
