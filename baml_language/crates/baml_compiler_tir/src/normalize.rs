@@ -64,6 +64,7 @@ enum StructuralTy {
     Unknown,
     Error,
     Void,
+    NoReturn,
     Resource,
     PromptAst,
     PrimitiveClient,
@@ -94,6 +95,11 @@ impl StructuralTy {
         if matches!(self, StructuralTy::Unknown | StructuralTy::Error)
             || matches!(other, StructuralTy::Unknown | StructuralTy::Error)
         {
+            return true;
+        }
+
+        // Never is the bottom type: Never <: T for all T
+        if matches!(self, StructuralTy::NoReturn) {
             return true;
         }
 
@@ -289,6 +295,7 @@ fn is_valid_map_key_type(ty: &Ty, aliases: &HashMap<Name, Ty>) -> bool {
             StructuralTy::PrimitiveClient => false,
             StructuralTy::BuiltinUnknown => false,
             StructuralTy::WatchAccessor(_) => false,
+            StructuralTy::NoReturn => false,
         }
     }
     let recursive = find_recursive_aliases(aliases);
@@ -362,6 +369,7 @@ fn normalize_impl(
         Ty::Unknown => StructuralTy::Unknown,
         Ty::Error => StructuralTy::Error,
         Ty::Void => StructuralTy::Void,
+        Ty::NoReturn => StructuralTy::NoReturn,
         Ty::Resource => StructuralTy::Resource,
         Ty::PromptAst => StructuralTy::PromptAst,
         Ty::PrimitiveClient => StructuralTy::PrimitiveClient,
