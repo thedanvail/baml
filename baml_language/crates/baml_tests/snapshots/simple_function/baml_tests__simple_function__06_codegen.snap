@@ -1,10 +1,10 @@
 ---
-source: target/debug/build/baml_tests-15cf2be5bc9d87e9/out/generated_tests.rs
+source: target/debug/build/baml_tests-8b981ade6c4f74ec/out/generated_tests.rs
 expression: output
 ---
 === BYTECODE ===
 Functions: 4
-Objects: 56
+Objects: 62
 Globals: 50
 
 Function HelloWorld (arity: 1, kind: SysOp(BamlLlmPrimitiveClientRenderPrompt)):

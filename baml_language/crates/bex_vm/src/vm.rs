@@ -793,6 +793,85 @@ impl BexVm {
         StackTrace { error, trace }
     }
 
+    // ========================================================================
+    // Exception Dispatch
+    // ========================================================================
+
+    /// Search a function's exception table for a handler covering `faulting_ip`.
+    fn find_handler(
+        function: &bex_vm_types::types::Function,
+        faulting_ip: usize,
+    ) -> Option<&bytecode::ExceptionTableEntry> {
+        function
+            .bytecode
+            .exception_table
+            .iter()
+            .find(|e| faulting_ip >= e.start_pc && faulting_ip < e.end_pc)
+    }
+
+    /// Clean up watched variables in a frame's scope.
+    fn cleanup_watched_vars_in_frame(&mut self, frame_idx: usize) {
+        for i in self.frames[frame_idx].locals_offset.into_raw()..self.stack.len() {
+            let index = StackIndex::from_raw(i);
+            if self.watched_vars.remove(&index).is_some() {
+                let var_node = NodeId::LocalVar(index);
+                self.watch.unregister_root(var_node);
+                if i < self.stack.len() {
+                    if let Value::Object(obj) = self.stack[index] {
+                        self.watch.unlink_edge(
+                            var_node,
+                            watch::Path::Binding,
+                            NodeId::HeapObject(obj),
+                        );
+                    }
+                }
+            }
+        }
+    }
+
+    /// Handle an exception by searching exception tables frame-by-frame.
+    ///
+    /// If a handler is found, restores the stack, pushes the exception value,
+    /// and redirects the IP to the handler. If no handler is found in any
+    /// frame, returns an `UnhandledException` error.
+    fn dispatch_exception(
+        &mut self,
+        exception: Value,
+        frame_idx: &mut usize,
+        function: &mut bex_vm_types::types::Function,
+    ) -> Result<(), VmError> {
+        loop {
+            let faulting_ip = (self.frames[*frame_idx].instruction_ptr - 1) as usize;
+
+            if let Some(entry) = Self::find_handler(function, faulting_ip) {
+                // Handler found — restore stack, push exception, jump.
+                let restore_to =
+                    self.frames[*frame_idx].locals_offset.into_raw() + entry.stack_depth;
+                self.stack.truncate(restore_to);
+                self.stack.push(exception);
+                self.frames[*frame_idx].instruction_ptr = entry.handler_pc as isize;
+                return Ok(());
+            }
+
+            // No handler — unwind this frame.
+            self.cleanup_watched_vars_in_frame(*frame_idx);
+            self.stack.drain(self.frames[*frame_idx].locals_offset..);
+            self.frames.pop();
+
+            if self.frames.is_empty() {
+                return Err(VmError::RuntimeError(
+                    RuntimeError::UnhandledException(exception),
+                ));
+            }
+
+            *frame_idx = self.frames.len() - 1;
+            *function = self
+                .get_object(self.frames[*frame_idx].function)
+                .as_function()?
+                .clone();
+        }
+    }
+
     /// Stops the execution of the current bytecode in favor of the given
     /// function
     ///
@@ -2396,6 +2475,16 @@ impl BexVm {
                     // This instruction should never be executed. If we reach it,
                     // there's a bug in the compiler or type system.
                     return Err(RuntimeError::Unreachable.into());
+                }
+
+                Instruction::Throw => {
+                    let exception = self.stack.ensure_pop()?;
+                    self.dispatch_exception(
+                        exception,
+                        &mut frame_idx,
+                        &mut function,
+                    )?;
+                    // dispatch_exception redirected IP; continue the exec loop.
                 }
             }
         }

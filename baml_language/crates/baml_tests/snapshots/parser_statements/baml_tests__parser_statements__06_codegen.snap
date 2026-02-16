@@ -1,10 +1,10 @@
 ---
-source: target/debug/build/baml_tests-559b93cee7ace4c8/out/generated_tests.rs
+source: target/debug/build/baml_tests-8b981ade6c4f74ec/out/generated_tests.rs
 expression: output
 ---
 === BYTECODE ===
 Functions: 24
-Objects: 79
+Objects: 85
 Globals: 70
 
 Function ConditionalLogic (arity: 1, kind: Bytecode):
@@ -311,33 +311,33 @@ Function iterator_style_for_loop (arity: 0, kind: Bytecode):
      37   JUMP -19               (to 18)
 
 Function let_statements (arity: 0, kind: Bytecode):
-     0    LOAD_CONST 0       (null)
-     1    LOAD_CONST 0       (null)
-     2    LOAD_CONST 0       (null)
-     3    LOAD_CONST 0       (null)
-     4    LOAD_CONST 1       (1)
-     5    STORE_VAR 1        (x)
-     6    LOAD_CONST 2       (2)
-     7    STORE_VAR 2        (y)
-     8    LOAD_CONST 1       (1)
-     9    LOAD_CONST 2       (2)
-     10   LOAD_CONST 3       (3)
-     11   ALLOC_ARRAY 3      
-     12   STORE_VAR 3        (z)
-     13   ALLOC_INSTANCE 5   (<class Point>)
-     14   COPY 0             
-     15   LOAD_CONST 1       (1)
-     16   STORE_FIELD 0      
-     17   COPY 0             
-     18   LOAD_CONST 2       (2)
-     19   STORE_FIELD 1      
-     20   STORE_VAR 4        (point)
-     21   LOAD_VAR 4         (point)
-     22   LOAD_FIELD 0       
-     23   LOAD_VAR 4         (point)
-     24   LOAD_FIELD 1       
-     25   BIN_OP +           
-     26   RETURN             
+     0    LOAD_CONST 0        (null)
+     1    LOAD_CONST 0        (null)
+     2    LOAD_CONST 0        (null)
+     3    LOAD_CONST 0        (null)
+     4    LOAD_CONST 1        (1)
+     5    STORE_VAR 1         (x)
+     6    LOAD_CONST 2        (2)
+     7    STORE_VAR 2         (y)
+     8    LOAD_CONST 1        (1)
+     9    LOAD_CONST 2        (2)
+     10   LOAD_CONST 3        (3)
+     11   ALLOC_ARRAY 3       
+     12   STORE_VAR 3         (z)
+     13   ALLOC_INSTANCE 11   (<class Point>)
+     14   COPY 0              
+     15   LOAD_CONST 1        (1)
+     16   STORE_FIELD 0       
+     17   COPY 0              
+     18   LOAD_CONST 2        (2)
+     19   STORE_FIELD 1       
+     20   STORE_VAR 4         (point)
+     21   LOAD_VAR 4          (point)
+     22   LOAD_FIELD 0        
+     23   LOAD_VAR 4          (point)
+     24   LOAD_FIELD 1        
+     25   BIN_OP +            
+     26   RETURN              
 
 Function mul_assign (arity: 0, kind: Bytecode):
      0   LOAD_CONST 0   (null)

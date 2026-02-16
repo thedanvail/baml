@@ -56,6 +56,23 @@ impl JumpTableData {
     }
 }
 
+/// One entry in a function's exception table.
+///
+/// Semantics: if an exception occurs while `IP ∈ [start_pc, end_pc)`,
+/// truncate the eval stack to `locals_offset + stack_depth`, push the
+/// exception value, and jump to `handler_pc`.
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct ExceptionTableEntry {
+    /// First protected instruction (inclusive).
+    pub start_pc: usize,
+    /// One past the last protected instruction (exclusive).
+    pub end_pc: usize,
+    /// Instruction to jump to on exception.
+    pub handler_pc: usize,
+    /// Stack depth *relative to frame's locals_offset* to restore.
+    pub stack_depth: usize,
+}
+
 /// Individual bytecode instruction.
 ///
 /// For faster iteration we'll start with an in-memory data structure that
@@ -363,6 +380,15 @@ pub enum Instruction {
     ///
     /// Throws `RuntimeError::Unreachable` (in `bex_vm` crate).
     Unreachable,
+
+    /// Throw an exception.
+    ///
+    /// Stack: `[exception_value]` -> `[]` (stack is restored by handler lookup)
+    ///
+    /// Pops the exception value, then searches the current function's exception
+    /// table for an entry covering the current IP. If found, restores stack
+    /// depth and jumps to handler. If not found, unwinds to caller.
+    Throw,
 }
 
 /// Block notification metadata stored in the Function struct.
@@ -561,6 +587,7 @@ impl std::fmt::Display for Instruction {
             Instruction::Discriminant => f.write_str("DISCRIMINANT"),
             Instruction::TypeTag => f.write_str("TYPE_TAG"),
             Instruction::Unreachable => f.write_str("UNREACHABLE"),
+            Instruction::Throw => f.write_str("THROW"),
         }
     }
 }
@@ -591,6 +618,12 @@ pub struct Bytecode {
     pub source_lines: Vec<usize>,
 
     pub scopes: Vec<usize>,
+
+    /// Exception table mapping IP ranges to handler addresses.
+    ///
+    /// Entries are ordered innermost-first: for nested try-catch, the inner
+    /// entry appears before the outer entry. The VM takes the first match.
+    pub exception_table: Vec<ExceptionTableEntry>,
 }
 
 impl Default for Bytecode {
@@ -608,6 +641,7 @@ impl Bytecode {
             jump_tables: Vec::new(),
             source_lines: Vec::new(),
             scopes: Vec::new(),
+            exception_table: Vec::new(),
         }
     }
 

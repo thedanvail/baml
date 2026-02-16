@@ -182,7 +182,8 @@ pub fn display_instruction(
         | Instruction::Discriminant
         | Instruction::TypeTag
         | Instruction::Unreachable
-        | Instruction::Return => String::new(),
+        | Instruction::Return
+        | Instruction::Throw => String::new(),
     };
 
     (instruction.to_string(), metadata)
@@ -306,7 +307,7 @@ fn instruction_color(instruction: &Instruction) -> Color {
         }
         Instruction::VizEnter(_) | Instruction::VizExit(_) => Color::BrightYellow,
         Instruction::Discriminant | Instruction::TypeTag => Color::BrightBlue,
-        Instruction::Unreachable => Color::BrightRed,
+        Instruction::Unreachable | Instruction::Throw => Color::BrightRed,
     }
 }
 
