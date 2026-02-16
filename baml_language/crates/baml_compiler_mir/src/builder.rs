@@ -142,6 +142,11 @@ impl MirBuilder {
         &mut self.blocks[id.0]
     }
 
+    /// Get the current number of blocks.
+    pub fn block_count(&self) -> usize {
+        self.blocks.len()
+    }
+
     // ========================================================================
     // Statement Emission
     // ========================================================================
@@ -199,6 +204,11 @@ impl MirBuilder {
     /// Emit an assert statement.
     pub fn assert(&mut self, condition: Operand) {
         self.push_statement(StatementKind::Assert(condition), None);
+    }
+
+    /// Emit a store_exception statement (pop exception from stack into local).
+    pub fn store_exception(&mut self, local: Local) {
+        self.push_statement(StatementKind::StoreException(local), None);
     }
 
     // ========================================================================
